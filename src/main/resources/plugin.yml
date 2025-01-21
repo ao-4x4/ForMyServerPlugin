@@ -4,6 +4,13 @@ main: jp.reitou_mugicha.openServerManagement.OpenServerManagement
 api-version: '1.21'
 author: "reitou_mugicha"
 
+dependencies:
+  server:
+    NBTAPI:
+      load: BEFORE
+      required: true
+      join-classpath: true
+
 commands:
   fakechat:
     description: プレイヤーのチャットを偽装します。
