@@ -77,6 +77,12 @@ public class UnlimitedAnvil implements Listener {
                                     return;
                                 }
 
+                                if (level >= 10)
+                                {
+                                    player.sendMessage("このエンチャントは最大レベルです | This enchantment is at maximum level");
+                                    return;
+                                }
+
                                 resultMeta.addStoredEnchant(enchantment, level + 1, true);
                                 result.setItemMeta(resultMeta);
                                 player.getInventory().addItem(result);
@@ -104,8 +110,8 @@ public class UnlimitedAnvil implements Listener {
                                     return;
                                 }
 
-                                EnchantmentStorageMeta storedMeta = (EnchantmentStorageMeta) slot1.getItemMeta();
-                                if (storedMeta.hasStoredEnchant(enchantment) && storedMeta.getStoredEnchantLevel(enchantment) >= level)
+                                ItemMeta slot1Meta = slot1.getItemMeta();
+                                if (slot1Meta.hasEnchant(enchantment) && slot1Meta.getEnchantLevel(enchantment) >= level)
                                 {
                                     player.sendMessage("このアイテムにはこのエンチャントを適用できません | This item cannot be enchanted with this enchantment");
                                     return;
