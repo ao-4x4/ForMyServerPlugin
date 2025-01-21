@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -16,13 +17,14 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class UnlimitedAnvil implements Listener {
     private final String GUIName = "改造金床";
     private final int cost = 30;
     private final int slot1Index = 11;
     private final int slot2Index = 13;
-    private final int resultIndex = 15;
+    private final int craftIndex = 15;
 
     private final Enchantment[] allowedEnchantments = {
             Enchantment.UNBREAKING,
@@ -50,99 +52,87 @@ public class UnlimitedAnvil implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getView().getTitle().equals(GUIName)) {
             Player player = (Player) event.getWhoClicked();
-            ItemStack item = event.getCurrentItem();
-            if (item == null || item.getType() == Material.AIR) {
-                return;
-            }
-
             Inventory inventory = event.getInventory();
-            ItemStack slot1 = event.getInventory().getItem(slot1Index);
-            ItemStack slot2 = event.getInventory().getItem(slot2Index);
+            ItemStack slot1 = inventory.getItem(slot1Index);
+            ItemStack slot2 = inventory.getItem(slot2Index);
 
-            switch (event.getSlot())
+            if (event.getRawSlot() == craftIndex)
             {
-                case slot1Index:
-                case slot2Index:
-                    if (slot1 != null && slot2 != null) {
-                        if (slot1.getType() == Material.ENCHANTED_BOOK && slot2.getType() == Material.NETHERITE_INGOT)
+                event.setCancelled(true);
+                if (slot1 != null && slot2 != null)
+                {
+                    if (slot1.getType() == Material.ENCHANTED_BOOK && slot2.getType() == Material.NETHERITE_INGOT)
+                    {
+                        ItemStack result = slot1.clone();
+                        EnchantmentStorageMeta resultMeta = (EnchantmentStorageMeta) result.getItemMeta();
+                        if (resultMeta != null)
                         {
-                            if (hasAllowedEnchantment(slot1)) {
-                                if (checkHasEnoughExp(player, inventory))
+                            Enchantment enchantment = getAllowedEnchantment(slot1);
+                            int level = getAllowedEnchantmentLevel(slot1);
+                            if (enchantment != null)
+                            {
+                                if (player.getLevel() < cost)
                                 {
-                                    ItemStack result = slot1.clone();
-                                    EnchantmentStorageMeta resultMeta = (EnchantmentStorageMeta) result.getItemMeta();
-                                    resultMeta.addStoredEnchant(getAllowedEnchantment(slot1), getAllowedEnchantmentLevel(slot1) + 1, true);
-                                    result.setItemMeta(resultMeta);
-
-                                    inventory.setItem(resultIndex, result);
+                                    player.sendMessage("経験値が足りません | Not enough experience");
+                                    return;
                                 }
-                            }
-                        } else if ((Helpers.isTool(slot1) || Helpers.isArmor(slot1)) && slot2.getType() == Material.ENCHANTED_BOOK)
-                        {
-                            if (hasAllowedEnchantment(slot2)) {
-                                if (checkHasEnoughExp(player, inventory))
-                                {
-                                    if (slot1.getEnchantments().keySet().stream().anyMatch(enchantment -> Arrays.asList(allowedEnchantments).contains(enchantment)) &&
-                                            slot1.getEnchantments().keySet().stream().anyMatch(enchantment -> Arrays.asList(allowedEnchantments).contains(enchantment) &&
-                                                    slot1.getEnchantmentLevel(getAllowedEnchantment(slot2)) >= getAllowedEnchantmentLevel(slot2)))
-                                    {
-                                        ItemStack resultItem = new ItemStack(Material.RED_CONCRETE);
-                                        ItemMeta resultMeta = resultItem.getItemMeta();
-                                        resultMeta.setDisplayName("エンチャントがかぶっているか、レベルが低いです。\nEnchantment is overlapping or level is low.");
-                                        resultItem.setItemMeta(resultMeta);
-                                        inventory.setItem(resultIndex, resultItem);
-                                        return;
-                                    }
 
-                                    ItemStack result = slot1.clone();
-                                    ItemMeta resultMeta = result.getItemMeta();
-                                    resultMeta.addEnchant(getAllowedEnchantment(slot2), getAllowedEnchantmentLevel(slot2), true);
-                                    result.setItemMeta(resultMeta);
+                                resultMeta.addStoredEnchant(enchantment, level + 1, true);
+                                result.setItemMeta(resultMeta);
+                                player.getInventory().addItem(result);
 
-                                    inventory.setItem(resultIndex, result);
-                                }
+                                slot1.setAmount(slot1.getAmount() - 1);
+                                slot2.setAmount(slot2.getAmount() - 1);
+
+                                player.setLevel(player.getLevel() - cost);
                             }
                         }
                     }
-                    break;
-                case resultIndex:
-                    if (item.getType() != Material.BARRIER && item.getType() != Material.RED_CONCRETE)
+                    else if ((Helpers.isTool(slot1) || Helpers.isArmor(slot1)) && slot2.getType() == Material.ENCHANTED_BOOK)
                     {
-                        ItemStack resultItem = new ItemStack(Material.BARRIER);
-                        ItemMeta resultMeta = resultItem.getItemMeta();
-                        resultMeta.setDisplayName("アイテムをセットしてください | Set an item");
-                        resultItem.setItemMeta(resultMeta);
+                        ItemStack result = slot1.clone();
+                        ItemMeta resultMeta = result.getItemMeta();
+                        if (resultMeta != null)
+                        {
+                            Enchantment enchantment = getAllowedEnchantment(slot2);
+                            int level = getAllowedEnchantmentLevel(slot2);
+                            if (enchantment != null)
+                            {
+                                if (player.getLevel() < cost)
+                                {
+                                    player.sendMessage("経験値が足りません | Not enough experience");
+                                    return;
+                                }
 
-                        player.getInventory().addItem(item);
-                        player.giveExpLevels(-cost);
-                        slot1.setAmount(slot1.getAmount() - 1);
-                        slot2.setAmount(slot2.getAmount() - 1);
-                        inventory.setItem(resultIndex, resultItem);
-                    } else {
-                        event.setCancelled(true);
+                                EnchantmentStorageMeta storedMeta = (EnchantmentStorageMeta) slot1.getItemMeta();
+                                if (storedMeta.hasStoredEnchant(enchantment) && storedMeta.getStoredEnchantLevel(enchantment) >= level)
+                                {
+                                    player.sendMessage("このアイテムにはこのエンチャントを適用できません | This item cannot be enchanted with this enchantment");
+                                    return;
+                                }
+
+                                resultMeta.addEnchant(enchantment, level, true);
+                                result.setItemMeta(resultMeta);
+                                player.getInventory().addItem(result);
+
+                                slot1.setAmount(slot1.getAmount() - 1);
+                                slot2.setAmount(slot2.getAmount() - 1);
+
+                                player.setLevel(player.getLevel() - cost);
+                            }
+                        }
                     }
-                    break;
-                default:
-                    if (event.getRawSlot() < 27)
-                    {
-                        event.setCancelled(true);
-                    }
-                    break;
+                }
+
             }
-
-
+            else
+            {
+                if (event.getRawSlot() != slot1Index && event.getRawSlot() != slot2Index && event.getRawSlot() < 27)
+                {
+                    event.setCancelled(true);
+                }
+            }
         }
-    }
-
-    public boolean checkHasEnoughExp(Player player, Inventory inventory) {
-        if (player.getExpToLevel() < cost) {
-            ItemStack resultItem = new ItemStack(Material.RED_CONCRETE);
-            ItemMeta resultMeta = resultItem.getItemMeta();
-            resultMeta.setDisplayName(String.format("経験値が足りません。| Not enough experience.\nコスト: %d | Cost: %d", cost, cost));
-            resultItem.setItemMeta(resultMeta);
-            inventory.setItem(resultIndex, resultItem);
-        }
-        return player.getExpToLevel() >= cost;
     }
 
     public void openCustomGUI(Player player) {
@@ -156,14 +146,14 @@ public class UnlimitedAnvil implements Listener {
             gui.setItem(i, blank);
         }
 
-        ItemStack resultItem = new ItemStack(Material.BARRIER);
-        ItemMeta resultMeta = resultItem.getItemMeta();
-        resultMeta.setDisplayName("アイテムをセットしてください | Set an item");
-        resultItem.setItemMeta(resultMeta);
+        ItemStack craftItem = new ItemStack(Material.CRAFTING_TABLE);
+        ItemMeta resultMeta = craftItem.getItemMeta();
+        resultMeta.setDisplayName("クラフト | Craft");
+        craftItem.setItemMeta(resultMeta);
 
         gui.setItem(slot1Index, null);
         gui.setItem(slot2Index, null);
-        gui.setItem(resultIndex, resultItem);
+        gui.setItem(craftIndex, craftItem);
 
         player.openInventory(gui);
     }
@@ -209,14 +199,13 @@ public class UnlimitedAnvil implements Listener {
 
     @EventHandler
     public void onInventoryClose(org.bukkit.event.inventory.InventoryCloseEvent event) {
-        if (event.getView().getTitle().equals("Upgrade")) {
+        if (event.getView().getTitle().equals(GUIName)) {
             Player player = (Player) event.getPlayer();
 
             Inventory inventory = event.getInventory();
 
             ItemStack slot1 = inventory.getItem(slot1Index);
             ItemStack slot2 = inventory.getItem(slot2Index);
-            ItemStack result = inventory.getItem(resultIndex);
 
             if (slot1 != null) {
                 player.getInventory().addItem(slot1);
@@ -224,11 +213,6 @@ public class UnlimitedAnvil implements Listener {
 
             if (slot2 != null) {
                 player.getInventory().addItem(slot2);
-            }
-
-            if (result != null && result.getType() != Material.BARRIER)
-            {
-                player.getInventory().addItem(result);
             }
         }
     }
