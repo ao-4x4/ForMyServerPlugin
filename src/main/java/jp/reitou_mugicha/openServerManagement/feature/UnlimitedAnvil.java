@@ -118,6 +118,8 @@ public class UnlimitedAnvil implements Listener {
                         slot1.setAmount(slot1.getAmount() - 1);
                         slot2.setAmount(slot2.getAmount() - 1);
                         inventory.setItem(resultIndex, resultItem);
+                    } else {
+                        event.setCancelled(true);
                     }
                     break;
                 default:
