@@ -69,3 +69,17 @@ shadowJar {
 
     //relocate 'org.mineacademy.fo', "${project.group}.foundation"
 }
+
+tasks.register('buildPlugin', Jar) {
+    group = 'build'
+    description = 'Builds the plugin JAR and copies it to the Minecraft server plugin directory.'
+    from sourceSets.main.output
+    archiveFileName.set("${project.name}.jar")
+
+    doLast {
+        copy {
+            from archiveFile
+            into '/Users/User/Documents/MinecraftServer/CrossPlay_OpenServer/plugins/'
+        }
+    }
+}
