@@ -12,10 +12,7 @@ import jp.reitou_mugicha.openServerManagement.extended_enderchest.ExtendedEnderc
 import jp.reitou_mugicha.openServerManagement.extended_enderchest.OpenEnderchestCommand;
 import jp.reitou_mugicha.openServerManagement.feature.*;
 import jp.reitou_mugicha.openServerManagement.fix.FixAnvilSweepingEdge;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.CompMaterial;
 
 public final class OpenServerManagement extends SimplePlugin
 {
