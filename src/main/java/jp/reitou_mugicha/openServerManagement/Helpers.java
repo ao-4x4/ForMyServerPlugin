@@ -42,7 +42,7 @@ public class Helpers
                 material == Material.GOLDEN_LEGGINGS || material == Material.CHAINMAIL_LEGGINGS || material == Material.LEATHER_LEGGINGS ||
                 material == Material.NETHERITE_BOOTS || material == Material.DIAMOND_BOOTS || material == Material.IRON_BOOTS ||
                 material == Material.GOLDEN_BOOTS || material == Material.CHAINMAIL_BOOTS || material == Material.LEATHER_BOOTS ||
-                material == Material.ELYTRA;
+                material == Material.ELYTRA || material == Material.PLAYER_HEAD;
     }
 
     public static boolean isShulkerBox(ItemStack item) {
