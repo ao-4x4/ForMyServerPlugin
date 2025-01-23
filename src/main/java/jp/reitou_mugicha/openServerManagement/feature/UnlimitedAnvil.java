@@ -43,8 +43,9 @@ public class UnlimitedAnvil implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.ANVIL) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && Objects.requireNonNull(event.getClickedBlock()).getType() == Material.ANVIL && player.isSneaking()) {
             openCustomGUI(player);
+            event.setCancelled(true);
         }
     }
 

@@ -24,8 +24,11 @@ public class Helpers
                 material == Material.NETHERITE_SHOVEL || material == Material.DIAMOND_SHOVEL || material == Material.IRON_SHOVEL || material == Material.GOLDEN_SHOVEL ||
                 material == Material.STONE_SHOVEL || material == Material.WOODEN_SHOVEL ||
                 material == Material.NETHERITE_AXE || material == Material.DIAMOND_AXE || material == Material.IRON_AXE || material == Material.GOLDEN_AXE ||
-                material == Material.STONE_AXE || material == Material.WOODEN_AXE;
+                material == Material.STONE_AXE || material == Material.WOODEN_AXE ||
+                material == Material.NETHERITE_SWORD || material == Material.DIAMOND_SWORD || material == Material.IRON_SWORD || material == Material.GOLDEN_SWORD ||
+                material == Material.STONE_SWORD || material == Material.WOODEN_SWORD;
     }
+
 
     public static boolean isArmor(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) {
