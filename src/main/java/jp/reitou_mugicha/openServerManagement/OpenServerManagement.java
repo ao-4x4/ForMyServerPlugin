@@ -12,13 +12,13 @@ import jp.reitou_mugicha.openServerManagement.extended_enderchest.ExtendedEnderc
 import jp.reitou_mugicha.openServerManagement.extended_enderchest.OpenEnderchestCommand;
 import jp.reitou_mugicha.openServerManagement.feature.*;
 import jp.reitou_mugicha.openServerManagement.fix.FixAnvilSweepingEdge;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.mineacademy.fo.plugin.SimplePlugin;
 
-public final class OpenServerManagement extends JavaPlugin
+public final class OpenServerManagement extends SimplePlugin
 {
     public static EnderchestDataManager enderchestDataManager;
     @Override
-    public void onEnable()
+    public void onPluginStart()
     {
         enderchestDataManager = new EnderchestDataManager(getDataFolder());
 
@@ -45,7 +45,7 @@ public final class OpenServerManagement extends JavaPlugin
     }
 
     @Override
-    public void onDisable()
+    public void onPluginStop()
     {
         getLogger().info("OpenServer Management Plugin disabled.");
     }
